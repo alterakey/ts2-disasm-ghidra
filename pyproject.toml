@@ -1,0 +1,51 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = 'ts2-disasm-ghidra'
+authors = [
+  {name='Takahiro Yoshimura', email='alterakey@protonmail.com'}
+]
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Private :: Do Not Upload",
+]
+readme = "README.md"
+keywords = ['security']
+dependencies = [
+  "termcolor",
+]
+requires-python = ">=3.11"
+dynamic = ['version', 'description']
+
+[project.optional-dependencies]
+dev = [
+  "mypy~=1.11.1",
+  "pyproject-flake8~=7.0.0",
+]
+
+[project.urls]
+Source = "https://github.com/alterakey/ts2-disasm-ghidra"
+
+[project.scripts]
+disasm = "disasm:entry0"
+
+[tool.flit.module]
+name = "disasm"
+
+[tool.mypy]
+strict = true
+show_error_codes = true
+enable_error_code = "redundant-expr"
+
+[[tool.mypy.overrides]]
+module = [
+]
+ignore_missing_imports = true
+
+# pyproject-flake8 (pflake8)
+[tool.flake8]
+extend-ignore = "E301,E302,E265,E114,E501,E231,E252,E261,E701,E722,E741"
+indent-size = 2
