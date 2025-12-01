@@ -11,7 +11,7 @@ from subprocess import CalledProcessError
 from tempfile import TemporaryDirectory
 
 if TYPE_CHECKING:
-  from typing import NoReturn, Protocol, Iterator, Set
+  from typing import NoReturn, Protocol, Iterator, Set, Optional
 
   class TargetProfile(Protocol):
     def get_tag(self) -> str: ...
@@ -82,14 +82,16 @@ class Disassembler:
     if not self._wd.exists():
       self._wd.mkdir(parents=True)
 
-  def extract(self, target: Path, overlay: bool = False) -> None:
+  def extract(self, target: Path, overlay: bool = False, *, cmdline: Optional[str] = None) -> None:
     self._prep()
     d = self._get_binpath()
     if d.exists() and not overlay:
       from shutil import rmtree
       rmtree(str(d))
     from shlex import quote
-    self._invoke('(mkdir -p {d} && cd {d} && unzip -o {fn}){q}'.format(d=d, fn=quote(str(target)), q=self._get_muter()))
+    if cmdline is None:
+      cmdline = '(mkdir -p {d} && cd {d} && unzip -o {fn}){q}'
+    self._invoke(cmdline.format(d=d, fn=quote(str(target)), q=self._get_muter()))
 
   def _get_binpath(self) -> Path:
     return self._wd / 't'
@@ -224,17 +226,21 @@ class XAPKDisassembler(APKDisassembler):
           slices.add(slice)
 
 class IPADisassembler:
-  def __init__(self, target: Path, skip_extract: bool = False, skip_analyze: bool = False, skip_generate: bool = False) -> None:
+  def __init__(self, target: Path, skip_extract: bool = False, skip_analyze: bool = False, skip_generate: bool = False, dont_mangle: bool = False) -> None:
     self._d = Disassembler(self)
     self._target = target.resolve()
     self._skip_extract = skip_extract
     self._skip_analyze = skip_analyze
     self._skip_generate = skip_generate
+    self._dont_mangle = dont_mangle
 
   def do(self) -> None:
     try:
       if not self._skip_extract:
-        self._d.extract(self._target)
+        if self._dont_mangle:
+          self._d.extract(self._target)
+        else:
+          self._d.extract(self._target, cmdline=r'(mkdir -p {d} && cd {d} && unzip -o {fn} && (bundle=$(echo Payload/*.app | sed -Ee "s/Payload\/|\.app$//g"); mv Payload/$bundle.app/$bundle Payload/$bundle.app/target && mv Payload/$bundle.app Payload/target.app)){q}')
       if not self._skip_analyze:
         self._d.analyze()
       if not self._skip_generate:
@@ -275,6 +281,7 @@ def entry0() -> None:
   parser.add_argument('--no-extract', action='store_true')
   parser.add_argument('--no-analyze', action='store_true')
   parser.add_argument('--no-generate', action='store_true')
+  parser.add_argument('--no-mangle', action='store_true')
   args = parser.parse_args()
 
   config.debug = args.debug
@@ -284,7 +291,7 @@ def entry0() -> None:
   if suf == '.apk':
     APKDisassembler(target, skip_extract=args.no_extract, skip_analyze=args.no_analyze, skip_generate=args.no_generate).do()
   elif suf == '.ipa':
-    IPADisassembler(target, skip_extract=args.no_extract, skip_analyze=args.no_analyze, skip_generate=args.no_generate).do()
+    IPADisassembler(target, skip_extract=args.no_extract, skip_analyze=args.no_analyze, skip_generate=args.no_generate, dont_mangle=args.no_mangle).do()
   elif suf == '.xapk':
     XAPKDisassembler(target, skip_extract=args.no_extract, skip_analyze=args.no_analyze, skip_generate=args.no_generate).do()
   else:
