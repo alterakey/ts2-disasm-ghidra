@@ -20,12 +20,6 @@ dependencies = [
 requires-python = ">=3.11"
 dynamic = ['version', 'description']
 
-[project.optional-dependencies]
-dev = [
-  "mypy~=1.11.1",
-  "pyproject-flake8~=7.0.0",
-]
-
 [project.urls]
 Source = "https://github.com/alterakey/ts2-disasm-ghidra"
 
@@ -49,3 +43,9 @@ ignore_missing_imports = true
 [tool.flake8]
 extend-ignore = "E301,E302,E265,E114,E501,E231,E252,E261,E701,E722,E741"
 indent-size = 2
+
+[dependency-groups]
+dev = [
+    "mypy>=1.11.2",
+    "pyproject-flake8>=7.0.0",
+]
