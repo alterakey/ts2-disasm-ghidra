@@ -103,12 +103,6 @@ dependencies = [
     { name = "termcolor" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "mypy" },
-    { name = "pyproject-flake8" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "mypy" },
@@ -116,12 +110,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "mypy", marker = "extra == 'dev'", specifier = "~=1.11.1" },
-    { name = "pyproject-flake8", marker = "extra == 'dev'", specifier = "~=7.0.0" },
-    { name = "termcolor" },
-]
-provides-extras = ["dev"]
+requires-dist = [{ name = "termcolor" }]
 
 [package.metadata.requires-dev]
 dev = [
