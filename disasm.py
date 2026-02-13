@@ -240,7 +240,7 @@ class IPADisassembler:
         if self._dont_mangle:
           self._d.extract(self._target)
         else:
-          self._d.extract(self._target, cmdline=r'(mkdir -p {d} && cd {d} && unzip -o {fn} && (bundle=$(echo Payload/*.app | sed -Ee "s/Payload\/|\.app$//g"); mv Payload/$bundle.app/$bundle Payload/$bundle.app/target && mv Payload/$bundle.app Payload/target.app)){q}')
+          self._d.extract(self._target, cmdline=r'(mkdir -p {d} && cd {d} && unzip -o {fn} && (bundle=$(echo Payload/*.app | sed -Ee "s/Payload\/|\.app$//g"); mv Payload/"$bundle".app/"$bundle" Payload/"$bundle".app/target && mv Payload/"$bundle".app Payload/target.app)){q}')
       if not self._skip_analyze:
         self._d.analyze()
       if not self._skip_generate:
